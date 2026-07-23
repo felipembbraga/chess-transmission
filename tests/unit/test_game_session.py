@@ -25,6 +25,7 @@ def test_game_session_round_trips_through_pgn():
     pgn = session.pgn_string()
     parsed = chess.pgn.read_game(io.StringIO(pgn))
 
+    assert parsed is not None
     assert parsed.headers["Event"] == "Test Event"
     assert parsed.headers["White"] == "Alice"
     assert parsed.headers["Black"] == "Bob"
@@ -41,11 +42,15 @@ def test_game_session_promotion_default_and_correction():
     result = session.observe(occupancy_from_board(candidate_board))
 
     assert result.status == InferenceStatus.AMBIGUOUS_PROMOTION
-    assert session.board.piece_at(chess.A8).piece_type == chess.QUEEN
+    promoted_piece = session.board.piece_at(chess.A8)
+    assert promoted_piece is not None
+    assert promoted_piece.piece_type == chess.QUEEN
 
     session.correct_promotion(chess.ROOK)
 
-    assert session.board.piece_at(chess.A8).piece_type == chess.ROOK
+    promoted_piece = session.board.piece_at(chess.A8)
+    assert promoted_piece is not None
+    assert promoted_piece.piece_type == chess.ROOK
 
 
 def test_game_session_set_result_rejects_invalid_value():

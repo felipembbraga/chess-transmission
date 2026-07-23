@@ -59,6 +59,7 @@ def test_infer_move_promotion_is_ambiguous_with_queen_default():
 
     assert result.status == InferenceStatus.AMBIGUOUS_PROMOTION
     assert result.needs_confirmation is True
+    assert result.move is not None
     assert result.move.promotion == chess.QUEEN
     promotions = {m.promotion for m in result.promotion_candidates}
     assert promotions == {chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT}
