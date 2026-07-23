@@ -1,7 +1,7 @@
 [project]
 name = "chess-transmission"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "Recognizes chess moves played on a physical board via camera and transmits them live to a Lichess Broadcast round"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
