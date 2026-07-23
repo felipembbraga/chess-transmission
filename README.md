@@ -118,3 +118,7 @@ tests/unit/       # camera-free, runs in CI
 tests/integration/ # needs real hardware, manual
 scripts/          # dev_capture_frames.py -- record frames for fixtures/replay
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
