@@ -17,6 +17,7 @@ from chess_transmission.config import (
 from chess_transmission.engine.game_session import GameMetadata, GameSession
 from chess_transmission.engine.types import InferenceStatus
 from chess_transmission.publish.lichess_broadcast import LichessBroadcastPublisher
+from chess_transmission.publish.pgn_file_writer import PgnFileWriter, PgnSaveError
 
 PROMOTION_PIECES = {
     "q": chess.QUEEN,
@@ -33,8 +34,28 @@ def _read_line_with_timeout(timeout_seconds: float) -> str | None:
     return None
 
 
+def _push_to_lichess(publisher: LichessBroadcastPublisher | None, pgn: str) -> None:
+    if publisher is None:
+        return
+    try:
+        publisher.push(pgn)
+    except RuntimeError as exc:
+        print(f"warning: failed to push to Lichess: {exc}")
+
+
+def _save_locally(pgn_writer: PgnFileWriter | None, pgn: str) -> None:
+    if pgn_writer is None:
+        return
+    try:
+        pgn_writer.save(pgn)
+    except PgnSaveError as exc:
+        print(f"warning: failed to save PGN locally: {exc}")
+
+
 def _maybe_handle_stdin_command(
-    session: GameSession, publisher: LichessBroadcastPublisher
+    session: GameSession,
+    publisher: LichessBroadcastPublisher | None,
+    pgn_writer: PgnFileWriter | None,
 ) -> None:
     """While waiting for the next stable board snapshot, also let the operator type
     `result 1-0` / `result 1/2-1/2` / `resync` at any time -- these can't be inferred
@@ -49,11 +70,13 @@ def _maybe_handle_stdin_command(
         except ValueError as exc:
             print(exc)
             return
-        publisher.push(session.pgn_string())
-        print(f"result set to {parts[1]} and pushed")
+        _push_to_lichess(publisher, session.pgn_string())
+        _save_locally(pgn_writer, session.pgn_string())
+        print(f"result set to {parts[1]}")
     elif parts[0] == "resync":
-        publisher.push(session.pgn_string())
-        print("resynced current PGN to Lichess")
+        _push_to_lichess(publisher, session.pgn_string())
+        _save_locally(pgn_writer, session.pgn_string())
+        print("resynced current PGN")
     else:
         print(f"unrecognized command: {line!r} (try: result 1-0 | resync)")
 
@@ -83,11 +106,21 @@ def main(argv: list[str] | None = None) -> int:
             round=settings.round,
         )
     )
-    publisher = LichessBroadcastPublisher(settings.lichess_token, settings.round_id)
+
+    publisher = None
+    if settings.lichess_token and settings.round_id:
+        publisher = LichessBroadcastPublisher(settings.lichess_token, settings.round_id)
+
+    pgn_writer = None
+    if settings.pgn_save_folder:
+        try:
+            pgn_writer = PgnFileWriter(settings.pgn_save_folder, session.metadata)
+        except PgnSaveError as exc:
+            print(f"warning: local PGN saving disabled: {exc}")
 
     print("watching board... play a move (type 'result 1-0'/'resync' anytime)")
     for snapshot in source.stream():
-        _maybe_handle_stdin_command(session, publisher)
+        _maybe_handle_stdin_command(session, publisher, pgn_writer)
         result = session.observe(snapshot.occupancy)
 
         if result.status == InferenceStatus.UNMATCHED:
@@ -111,7 +144,8 @@ def main(argv: list[str] | None = None) -> int:
             continue
 
         print(f"move: {result.san}")
-        publisher.push(session.pgn_string())
+        _push_to_lichess(publisher, session.pgn_string())
+        _save_locally(pgn_writer, session.pgn_string())
 
     return 0
 

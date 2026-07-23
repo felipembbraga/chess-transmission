@@ -32,8 +32,9 @@ camera/board and a live Lichess broadcast round to verify end-to-end — see
 - Python >= 3.12
 - [uv](https://docs.astral.sh/uv/)
 - A camera positioned overhead of the physical board, for the live pipeline
-- A Lichess account with a broadcast round set up, and an API token with the
-  `study:write` scope, for live transmission
+- At least one of: a Lichess account with a broadcast round set up and an API
+  token with the `study:write` scope (for live transmission), or a local folder
+  to save PGN files to (for a local-only record) — see [Setup](#setup)
 
 ## Setup
 
@@ -46,12 +47,18 @@ cp .env.example .env                                    # LICHESS_API_TOKEN
 Edit `config/settings.toml` and `.env` with your camera, Lichess broadcast round ID,
 player names, and API token. Both files are gitignored (per-machine/secret).
 
+Lichess transmission and local PGN saving are each optional and independent —
+`config/settings.toml`'s `round_id` (plus `.env`'s `LICHESS_API_TOKEN`) and
+`pgn_save_folder` can be set on their own or together, but at least one is
+required. With only `pgn_save_folder` set, the tool runs with no Lichess account
+at all, saving each game session to its own file in that folder.
+
 ## Usage
 
 ```bash
 uv run chess-transmission calibrate   # one-time: click board corners, capture empty-board baseline
-uv run chess-transmission run         # live loop: camera -> Lichess broadcast round
-uv run chess-transmission replay <dir>  # replay recorded frames, no camera needed
+uv run chess-transmission run         # live loop: camera -> Lichess broadcast round and/or local PGN file
+uv run chess-transmission replay <dir> [--pgn-save-folder <dir>]  # replay recorded frames, no camera needed
 ```
 
 `calibrate` must be run once per camera/board setup before `run` will work — it
@@ -80,8 +87,9 @@ uv run pytest tests/unit -q
 
 The unit suite is fully camera-free: move inference and game/PGN state are tested
 against fixtures derived by applying moves to a `chess.Board`, the occupancy
-classifier is tested against synthetic images, and the Lichess publisher is tested
-with `berserk`'s client mocked out. Nothing in `tests/unit` requires a camera, a
+classifier is tested against synthetic images, the Lichess publisher is tested
+with `berserk`'s client mocked out, and the local PGN file writer is tested against
+a real (temporary) filesystem. Nothing in `tests/unit` requires a camera, a
 physical board, or network access.
 
 ## Verification
@@ -104,7 +112,7 @@ src/chess_transmission/
   board_source/   # BoardStateSource ABC + CameraBoardStateSource (DGT is a stub)
   vision/         # capture, stability/debounce, perspective warp, occupancy diff
   engine/         # move inference + GameSession (chess.Board/PGN state) -- camera-free
-  publish/        # LichessBroadcastPublisher (berserk)
+  publish/        # LichessBroadcastPublisher (berserk) and PgnFileWriter (local save)
   cli/            # calibrate / run / replay entry points
 tests/unit/       # camera-free, runs in CI
 tests/integration/ # needs real hardware, manual

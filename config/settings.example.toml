@@ -3,7 +3,13 @@
 camera_index = 0
 occupancy_threshold = 18.0
 
+# Optional: save the live PGN to a local file in this folder as the game
+# progresses. Independent of Lichess -- works with or without round_id/
+# LICHESS_API_TOKEN configured. Comment out (or omit) to disable.
+pgn_save_folder = "games"
+
 # The Lichess broadcast round to push moves to (find it in the round's URL).
+# Optional -- omit (along with LICHESS_API_TOKEN) to run with local saving only.
 round_id = "abcd1234"
 
 # PGN headers. White/Black must match the player names already configured
