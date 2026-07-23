@@ -6,9 +6,13 @@ import argparse
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="chess-transmission")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("calibrate", help="calibrate the camera against the physical board")
+    subparsers.add_parser(
+        "calibrate", help="calibrate the camera against the physical board"
+    )
     subparsers.add_parser("run", help="run the live camera-to-Lichess pipeline")
-    replay_parser = subparsers.add_parser("replay", help="replay recorded frames (dev/offline)")
+    replay_parser = subparsers.add_parser(
+        "replay", help="replay recorded frames (dev/offline)"
+    )
     replay_parser.add_argument("frames_dir")
 
     args, remaining = parser.parse_known_args(argv)

@@ -34,7 +34,9 @@ def infer_move(board: chess.Board, observed: OccupancyGrid) -> InferredMove:
 
     if len(matches) == 1:
         move = matches[0]
-        return InferredMove(status=InferenceStatus.MATCHED, move=move, san=board.san(move))
+        return InferredMove(
+            status=InferenceStatus.MATCHED, move=move, san=board.san(move)
+        )
 
     # Multiple matches only occurs for promotion: Q/R/B/N promotions of the same
     # pawn move produce identical occupancy, so occupancy alone can't pick one.

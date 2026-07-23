@@ -12,11 +12,16 @@ def apply_uci_sequence(session: GameSession, moves_uci: list[str]) -> None:
         candidate_board.push_uci(move_uci)
         observed = occupancy_from_board(candidate_board)
         result = session.observe(observed)
-        assert result.status in (InferenceStatus.MATCHED, InferenceStatus.AMBIGUOUS_PROMOTION)
+        assert result.status in (
+            InferenceStatus.MATCHED,
+            InferenceStatus.AMBIGUOUS_PROMOTION,
+        )
 
 
 def test_game_session_round_trips_through_pgn():
-    metadata = GameMetadata(event="Test Event", site="Test Site", white="Alice", black="Bob", round="1")
+    metadata = GameMetadata(
+        event="Test Event", site="Test Site", white="Alice", black="Bob", round="1"
+    )
     session = GameSession(metadata)
 
     apply_uci_sequence(session, ["e2e4", "e7e5", "g1f3", "b8c6"])
@@ -30,7 +35,12 @@ def test_game_session_round_trips_through_pgn():
     assert parsed.headers["White"] == "Alice"
     assert parsed.headers["Black"] == "Bob"
     assert parsed.headers["Round"] == "1"
-    assert [move.uci() for move in parsed.mainline_moves()] == ["e2e4", "e7e5", "g1f3", "b8c6"]
+    assert [move.uci() for move in parsed.mainline_moves()] == [
+        "e2e4",
+        "e7e5",
+        "g1f3",
+        "b8c6",
+    ]
 
 
 def test_game_session_promotion_default_and_correction():

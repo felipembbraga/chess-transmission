@@ -30,8 +30,12 @@ def _collect_corners(camera_index: int) -> tuple[list[tuple[float, float]], np.n
             preview = frame.copy()
             for point in corners:
                 cv2.circle(preview, (int(point[0]), int(point[1])), 6, (0, 255, 0), -1)
-            label = f"click {CORNER_ORDER[len(corners)]} ({len(corners)}/4) -- q to abort"
-            cv2.putText(preview, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            label = (
+                f"click {CORNER_ORDER[len(corners)]} ({len(corners)}/4) -- q to abort"
+            )
+            cv2.putText(
+                preview, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2
+            )
             cv2.imshow(WINDOW_NAME, preview)
             if cv2.waitKey(20) & 0xFF == ord("q"):
                 raise SystemExit("calibration aborted")
@@ -43,7 +47,9 @@ def _collect_corners(camera_index: int) -> tuple[list[tuple[float, float]], np.n
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Calibrate the camera against the physical board.")
+    parser = argparse.ArgumentParser(
+        description="Calibrate the camera against the physical board."
+    )
     parser.add_argument("--camera-index", type=int, default=0)
     parser.add_argument("--out", type=str, default=str(DEFAULT_CALIBRATION_PATH))
     args = parser.parse_args(argv)

@@ -47,7 +47,9 @@ class GameSession:
         """Replace the last move's (queen-default) promotion with the correct piece."""
         last_move = self.board.pop()
         self._node = self._node.parent
-        self._apply(chess.Move(last_move.from_square, last_move.to_square, promotion=piece_type))
+        self._apply(
+            chess.Move(last_move.from_square, last_move.to_square, promotion=piece_type)
+        )
 
     def force_san(self, san: str) -> None:
         """Manually apply a move the inference engine couldn't recognize."""
@@ -55,11 +57,15 @@ class GameSession:
 
     def set_result(self, result: str) -> None:
         if result not in VALID_RESULTS:
-            raise ValueError(f"invalid result: {result!r}, expected one of {VALID_RESULTS}")
+            raise ValueError(
+                f"invalid result: {result!r}, expected one of {VALID_RESULTS}"
+            )
         self.game.headers["Result"] = result
 
     def pgn_string(self) -> str:
-        exporter = chess.pgn.StringExporter(headers=True, variations=False, comments=False)
+        exporter = chess.pgn.StringExporter(
+            headers=True, variations=False, comments=False
+        )
         return self.game.accept(exporter)
 
     def _apply(self, move: chess.Move) -> None:

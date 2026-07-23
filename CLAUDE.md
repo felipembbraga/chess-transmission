@@ -14,6 +14,7 @@ The full architecture, rationale, and phased milestone plan live in `/home/felip
 uv sync                      # install/update dependencies
 uv run pytest tests/unit -q  # run the unit suite (camera-free, runs in CI)
 uv run pytest tests/unit -q -k test_infer_move_matches_expected_san  # single test
+uv run black .                # format all Python files (required before committing, see constitution)
 
 uv run chess-transmission calibrate   # interactive: click board corners + capture baseline
 uv run chess-transmission run         # live loop: camera -> Lichess broadcast round

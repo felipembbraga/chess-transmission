@@ -19,7 +19,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("out_dir", type=str)
     parser.add_argument("--camera-index", type=int, default=0)
-    parser.add_argument("--interval", type=float, default=1.0, help="seconds between frames")
+    parser.add_argument(
+        "--interval", type=float, default=1.0, help="seconds between frames"
+    )
     args = parser.parse_args(argv)
 
     out_dir = Path(args.out_dir)

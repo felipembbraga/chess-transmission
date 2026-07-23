@@ -20,7 +20,9 @@ def main(argv: list[str] | None = None) -> int:
         "debugging fixtures against recorded footage from scripts/dev_capture_frames.py."
     )
     parser.add_argument("frames_dir", type=str)
-    parser.add_argument("--calibration", type=str, default=str(DEFAULT_CALIBRATION_PATH))
+    parser.add_argument(
+        "--calibration", type=str, default=str(DEFAULT_CALIBRATION_PATH)
+    )
     args = parser.parse_args(argv)
 
     calibration = Calibration.from_json(Path(args.calibration))

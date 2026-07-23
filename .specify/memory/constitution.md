@@ -1,14 +1,10 @@
 <!--
 Sync Impact Report
-- Version change: none (template, unfilled) → 1.0.0
-- Modified principles: n/a (initial ratification, no prior named principles)
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: none renamed
 - Added sections:
-  - Core Principles: I. Occupancy-Over-Identity, II. Hardware-Decoupled Core,
-    III. Camera-Free Determinism, IV. No Silent Guessing on Unknowable State,
-    V. Lichess-Only Transmission, Deferred Scope
-  - Technology Constraints
-  - Development Workflow
-  - Governance
+  - Technology Constraints: added a Black formatting requirement for all Python
+    files (materially expanded guidance within an existing section)
 - Removed sections: none
 - Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (Constitution Check gate is generic,
@@ -16,8 +12,9 @@ Sync Impact Report
   - .specify/templates/spec-template.md ✅ (no constitution-specific references)
   - .specify/templates/tasks-template.md ✅ (no constitution-specific references)
   - .specify/templates/commands/*.md — n/a, directory does not exist in this project
-  - CLAUDE.md ✅ (already reflects the occupancy-first architecture and hardware
-    boundaries described below; no contradictions found)
+  - CLAUDE.md ✅ updated (Commands section now lists `uv run black .`)
+  - pyproject.toml / codebase ✅ updated (black added as a dev dependency with
+    target-version pinned to py312, entire src/tests/scripts tree reformatted)
 - Follow-up TODOs: none
 -->
 
@@ -95,7 +92,10 @@ secrets (Lichess API token, via `.env`/environment variable) from non-secret set
 from per-machine calibration data (`config/calibration.json`) — none of the latter
 two are committed to version control. New dependencies for functionality already
 achievable with the existing stack (e.g., a full ML framework before Principle I's
-bar is met) require explicit justification.
+bar is met) require explicit justification. Every Python file MUST be formatted with
+Black using its default settings before being committed; run `uv run black .` (or
+equivalent) as part of finishing any change that touches `.py` files, so formatting
+is never a matter of individual style or a source of unrelated review noise.
 
 ## Development Workflow
 
@@ -123,4 +123,4 @@ implementation begins; any complexity that conflicts with a principle must be
 justified there or removed. Compliance is reviewed whenever a plan or spec is
 produced for a feature touching capture, inference, or publishing.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-23 | **Last Amended**: 2026-07-23
+**Version**: 1.1.0 | **Ratified**: 2026-07-23 | **Last Amended**: 2026-07-23

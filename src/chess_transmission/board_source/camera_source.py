@@ -8,7 +8,10 @@ import numpy as np
 from chess_transmission.board_source.base import BoardSnapshot, BoardStateSource
 from chess_transmission.board_source.calibration import Calibration
 from chess_transmission.vision.capture import CameraCapture
-from chess_transmission.vision.occupancy import DEFAULT_OCCUPANCY_THRESHOLD, classify_occupancy
+from chess_transmission.vision.occupancy import (
+    DEFAULT_OCCUPANCY_THRESHOLD,
+    classify_occupancy,
+)
 from chess_transmission.vision.perspective import warp_board
 from chess_transmission.vision.stability import StabilityDetector
 

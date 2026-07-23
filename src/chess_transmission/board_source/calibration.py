@@ -23,15 +23,21 @@ class Calibration:
         return compute_homography(self.corners)
 
     def baseline_by_square(self) -> dict[chess.Square, float]:
-        return {chess.parse_square(name): value for name, value in self.baseline.items()}
+        return {
+            chess.parse_square(name): value for name, value in self.baseline.items()
+        }
 
     def to_json(self, path: Path) -> None:
-        path.write_text(json.dumps({"corners": self.corners, "baseline": self.baseline}, indent=2))
+        path.write_text(
+            json.dumps({"corners": self.corners, "baseline": self.baseline}, indent=2)
+        )
 
     @classmethod
     def from_json(cls, path: Path) -> Calibration:
         data = json.loads(path.read_text())
-        return cls(corners=[tuple(c) for c in data["corners"]], baseline=data["baseline"])
+        return cls(
+            corners=[tuple(c) for c in data["corners"]], baseline=data["baseline"]
+        )
 
     @classmethod
     def capture(
@@ -43,5 +49,7 @@ class Calibration:
         baseline = compute_baseline(warped)
         return cls(
             corners=corners,
-            baseline={chess.square_name(square): value for square, value in baseline.items()},
+            baseline={
+                chess.square_name(square): value for square, value in baseline.items()
+            },
         )
