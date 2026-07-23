@@ -1,0 +1,15 @@
+# Copy this file to config/settings.toml (gitignored) and fill in your setup.
+
+camera_index = 0
+occupancy_threshold = 18.0
+
+# The Lichess broadcast round to push moves to (find it in the round's URL).
+round_id = "abcd1234"
+
+# PGN headers. White/Black must match the player names already configured
+# for this board in the Lichess broadcast round -- Lichess matches by name.
+event = "Live Broadcast"
+site = "?"
+white = "White Player"
+black = "Black Player"
+round = "1"
