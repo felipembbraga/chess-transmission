@@ -59,7 +59,15 @@ at all, saving each game session to its own file in that folder.
 uv run chess-transmission calibrate   # one-time: click board corners, capture empty-board baseline
 uv run chess-transmission run         # live loop: camera -> Lichess broadcast round and/or local PGN file
 uv run chess-transmission replay <dir> [--pgn-save-folder <dir>]  # replay recorded frames, no camera needed
+uv run chess-transmission extract <video_file> [--pgn-save-folder <dir>]  # extract a PGN from a recorded video
 ```
+
+`extract` recognizes a full game from a pre-recorded video file (given a matching
+calibration) and runs to completion with no operator interaction — a pawn
+promotion always defaults to queen, and any frame that couldn't be recognized is
+skipped, both flagged in an end-of-run review summary printed after the PGN so
+you know exactly what to double-check, rather than having to scrub the whole
+video. No camera is used or required.
 
 `calibrate` must be run once per camera/board setup before `run` will work — it
 asks you to click the board's 4 corners (in order: a8, h8, h1, a1, which also
@@ -89,8 +97,11 @@ The unit suite is fully camera-free: move inference and game/PGN state are teste
 against fixtures derived by applying moves to a `chess.Board`, the occupancy
 classifier is tested against synthetic images, the Lichess publisher is tested
 with `berserk`'s client mocked out, and the local PGN file writer is tested against
-a real (temporary) filesystem. Nothing in `tests/unit` requires a camera, a
-physical board, or network access.
+a real (temporary) filesystem. `extract`'s whole pipeline — video decode, frame
+sampling, occupancy, move inference, PGN, and the review summary — is also
+covered end-to-end using tiny synthetic video files generated on the fly, with no
+recorded footage checked into the repo. Nothing in `tests/unit` requires a camera,
+a physical board, or network access.
 
 ## Verification
 
@@ -109,11 +120,11 @@ Since `calibrate` and `run` need real hardware, checking them end-to-end is manu
 
 ```
 src/chess_transmission/
-  board_source/   # BoardStateSource ABC + CameraBoardStateSource (DGT is a stub)
+  board_source/   # BoardStateSource ABC + Camera-/VideoFile-BoardStateSource (DGT is a stub)
   vision/         # capture, stability/debounce, perspective warp, occupancy diff
-  engine/         # move inference + GameSession (chess.Board/PGN state) -- camera-free
+  engine/         # move inference + GameSession (chess.Board/PGN state) + ReviewLog -- camera-free
   publish/        # LichessBroadcastPublisher (berserk) and PgnFileWriter (local save)
-  cli/            # calibrate / run / replay entry points
+  cli/            # calibrate / run / replay / extract entry points
 tests/unit/       # camera-free, runs in CI
 tests/integration/ # needs real hardware, manual
 scripts/          # dev_capture_frames.py -- record frames for fixtures/replay

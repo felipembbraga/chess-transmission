@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 <!-- SPECKIT START -->
-Active Spec Kit feature: [specs/001-save-pgn-folder/plan.md](specs/001-save-pgn-folder/plan.md) — read it for technologies, structure, and commands specific to the in-progress feature.
+Active Spec Kit feature: [specs/002-extract-pgn-video/plan.md](specs/002-extract-pgn-video/plan.md) — read it for technologies, structure, and commands specific to the in-progress feature.
 <!-- SPECKIT END -->
 
 ## What this is
@@ -23,6 +23,7 @@ uv run black .                # format all Python files (required before committ
 uv run chess-transmission calibrate   # interactive: click board corners + capture baseline
 uv run chess-transmission run         # live loop: camera -> Lichess broadcast round
 uv run chess-transmission replay <dir># replay recorded frames, no camera needed
+uv run chess-transmission extract <video_file>  # extract a PGN from a recorded video file, no camera needed
 
 uv run python scripts/dev_capture_frames.py <out_dir>  # record frames for fixtures/replay
 ```
@@ -35,7 +36,7 @@ Config: copy `config/settings.example.toml` → `config/settings.toml` (camera i
 
 **Core insight the whole design follows from:** move inference does not need per-square piece identity. A `chess.Board` already knows what's on every square between confirmed moves, so the sensor layer only needs binary occupancy per square. `engine/move_inference.py::infer_move` tries every legal move from the current position, computes each candidate's resulting occupancy, and returns whichever move(s) reproduce the observed grid — this one algorithm handles disambiguation, castling, and en passant with no special-casing. The only unresolvable case is promotion piece choice (Q/R/B/N give identical occupancy), handled by defaulting to queen and flagging `needs_confirmation`.
 
-**`BoardStateSource` is the seam between capture and everything else** (`board_source/base.py`). `engine/` and `publish/` depend only on this ABC (`BoardSnapshot.occupancy`), never on OpenCV or serial specifics — this is what will let a future `DGTBoardStateSource` slot in next to `CameraBoardStateSource` without touching move inference or the Lichess publisher.
+**`BoardStateSource` is the seam between capture and everything else** (`board_source/base.py`). `engine/` and `publish/` depend only on this ABC (`BoardSnapshot.occupancy`), never on OpenCV or serial specifics — this is what let `board_source/video_file_source.py::VideoFileBoardStateSource` slot in next to `CameraBoardStateSource` (and will do the same for a future `DGTBoardStateSource`) without touching move inference or either publisher. `cli/extract.py` uses it to recognize a full game from a recorded video file (`vision/video_capture.py::VideoFileCapture`, sampling frames at roughly the live pipeline's effective rate so recognition behaves the same as it would live) — runs to completion with no operator interaction, logging unmatched frames and assumed promotions to an `engine/review.py::ReviewLog` printed as an end-of-run summary instead of the live loop's interactive correction prompts.
 
 **Data flow:** `vision/capture.py` (camera frames) → `vision/stability.py` (debounce: only emit once frame-to-frame diff is quiet for a full window, filtering out mid-move hand motion) → `vision/occupancy.py` (per-cell diff against `board_source/calibration.py`'s empty-board baseline, using the homography from `vision/perspective.py`) → `board_source/camera_source.py` wraps these into `BoardSnapshot`s → `engine/game_session.py::GameSession.observe()` runs `infer_move` and applies the result to its `chess.Board`/`chess.pgn.Game`. From there the updated PGN fans out to up to two independent, individually-optional sinks, each called from `cli/run.py`/`cli/replay.py` and each wrapped so a failure in one never blocks the other: `publish/lichess_broadcast.py::LichessBroadcastPublisher.push()` sends it via `berserk`, and `publish/pgn_file_writer.py::PgnFileWriter.save()` overwrites a local file (one per game session, named from the start timestamp + player names) in the operator-configured `pgn_save_folder`.
 
@@ -43,4 +44,4 @@ Config: copy `config/settings.example.toml` → `config/settings.toml` (camera i
 
 **Result-setting and resync can't come from the board.** Game result (resignation/draw agreement) and manual re-push after a failed publish are handled as commands typed at the `run` loop's stdin prompt (`result 1-0`, `resync`), not as separate CLI invocations — `GameSession` only exists in-memory for the duration of one `run`.
 
-**Testing split:** `engine/` is fully deterministic and tested with fixtures derived by applying a move to a `chess.Board(fen)` and diffing occupancy — no images involved (`tests/unit/test_move_inference.py`, `test_game_session.py`). `vision/occupancy.py` is tested against synthetic numpy images, not real photos (`test_occupancy_diff.py`), since real-photo accuracy is lighting/hardware-dependent and would make the suite flaky. `publish/` is tested with the `berserk.Client` mocked out (`test_lichess_publisher.py`). Anything needing a live camera or a real Lichess round is manual/integration-only.
+**Testing split:** `engine/` is fully deterministic and tested with fixtures derived by applying a move to a `chess.Board(fen)` and diffing occupancy — no images involved (`tests/unit/test_move_inference.py`, `test_game_session.py`). `vision/occupancy.py` is tested against synthetic numpy images, not real photos (`test_occupancy_diff.py`), since real-photo accuracy is lighting/hardware-dependent and would make the suite flaky. `publish/` is tested with the `berserk.Client` mocked out (`test_lichess_publisher.py`). Anything needing a live camera or a real Lichess round is manual/integration-only — except `cli/extract.py`'s video path, which needs neither: `tests/unit/video_fixtures.py` writes tiny lossless (FFV1) synthetic `.avi` files on the fly, so `test_video_capture.py`/`test_video_file_source.py`/`test_cli_extract.py` cover the whole decode → recognize → PGN → review-summary flow with zero real hardware.

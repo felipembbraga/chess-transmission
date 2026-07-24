@@ -46,7 +46,9 @@ class GameSession:
     def correct_promotion(self, piece_type: chess.PieceType) -> None:
         """Replace the last move's (queen-default) promotion with the correct piece."""
         last_move = self.board.pop()
-        self._node = self._node.parent
+        parent = self._node.parent
+        assert parent is not None
+        self._node = parent
         self._apply(
             chess.Move(last_move.from_square, last_move.to_square, promotion=piece_type)
         )
