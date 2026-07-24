@@ -1,0 +1,84 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "chess-transmission: calibrate",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chess_transmission.cli.main",
+            "args": ["calibrate"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "chess-transmission: run",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chess_transmission.cli.main",
+            "args": ["run"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "chess-transmission: replay",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chess_transmission.cli.main",
+            "args": ["replay", "${input:framesDir}"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "chess-transmission: extract",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chess_transmission.cli.main",
+            "args": ["extract", "${input:videoPath}"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Python: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "pytest: unit tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["tests/unit", "-q"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "pytest: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["${file}", "-q"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ],
+    "inputs": [
+        {
+            "id": "framesDir",
+            "type": "promptString",
+            "description": "Path to recorded frames directory (for `replay`)"
+        },
+        {
+            "id": "videoPath",
+            "type": "promptString",
+            "description": "Path to recorded video file (for `extract`)"
+        }
+    ]
+}
