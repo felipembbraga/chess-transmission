@@ -12,6 +12,16 @@
             "envFile": "${workspaceFolder}/.env"
         },
         {
+            "name": "chess-transmission: calibrate from video",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "chess_transmission.cli.main",
+            "args": ["calibrate", "--from-video", "${input:videoPath}"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
             "name": "chess-transmission: run",
             "type": "debugpy",
             "request": "launch",
