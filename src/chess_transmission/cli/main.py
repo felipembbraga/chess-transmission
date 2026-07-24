@@ -14,6 +14,10 @@ def main(argv: list[str] | None = None) -> int:
         "replay", help="replay recorded frames (dev/offline)"
     )
     replay_parser.add_argument("frames_dir")
+    extract_parser = subparsers.add_parser(
+        "extract", help="extract a PGN from a recorded video file"
+    )
+    extract_parser.add_argument("video_path")
 
     args, remaining = parser.parse_known_args(argv)
 
@@ -29,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
         from chess_transmission.cli.replay import main as replay_main
 
         return replay_main([args.frames_dir, *remaining])
+    if args.command == "extract":
+        from chess_transmission.cli.extract import main as extract_main
+
+        return extract_main([args.video_path, *remaining])
     parser.error(f"unknown command: {args.command}")
     return 2
 
