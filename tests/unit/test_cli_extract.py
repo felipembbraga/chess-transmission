@@ -8,7 +8,7 @@ from chess_transmission.cli import extract
 from chess_transmission.engine.types import occupancy_from_board
 from chess_transmission.vision.occupancy import square_for_cell
 from chess_transmission.vision.perspective import BOARD_SIZE
-from tests.unit.video_fixtures import write_synthetic_video
+from tests.unit.video_fixtures import write_empty_video, write_synthetic_video
 
 CELL_SIZE = BOARD_SIZE // 8
 EMPTY = 200
@@ -98,6 +98,20 @@ def test_extract_reports_clear_error_for_unreadable_video(tmp_path, capsys):
     assert exit_code != 0
     assert "error" in out.lower()
     assert "e4" not in out
+
+
+def test_extract_reports_clear_error_for_video_that_decodes_no_frames(tmp_path, capsys):
+    calibration_path = _write_calibration(tmp_path)
+    empty_video = tmp_path / "empty.avi"
+    write_empty_video(empty_video)
+
+    exit_code = extract.main([str(empty_video), "--calibration", str(calibration_path)])
+
+    out = capsys.readouterr().out
+    assert exit_code != 0
+    assert "error" in out.lower()
+    assert "1. e4" not in out
+    assert "Result" not in out
 
 
 # A real legal sequence reaching a pawn promotion, verified move-by-move with

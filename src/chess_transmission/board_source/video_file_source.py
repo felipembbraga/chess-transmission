@@ -65,6 +65,10 @@ class VideoFileBoardStateSource(BoardStateSource):
                 if detector.push(frame):
                     yield self._snapshot_from_frame(frame)
                     detector.reset()
+            if cap.frames_read == 0:
+                raise RuntimeError(
+                    f"video file could not be read (no frames decoded): {self._video_path}"
+                )
 
     @property
     def frames_processed(self) -> int:

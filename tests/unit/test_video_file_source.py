@@ -1,12 +1,13 @@
 import chess
 import numpy as np
+import pytest
 
 from chess_transmission.board_source.calibration import Calibration
 from chess_transmission.board_source.video_file_source import VideoFileBoardStateSource
 from chess_transmission.engine.game_session import GameSession
 from chess_transmission.engine.types import InferenceStatus
 from chess_transmission.vision.perspective import BOARD_SIZE
-from tests.unit.video_fixtures import write_synthetic_video
+from tests.unit.video_fixtures import write_empty_video, write_synthetic_video
 
 CELL_SIZE = BOARD_SIZE // 8
 EMPTY = 200
@@ -69,3 +70,13 @@ def test_progress_properties_report_frames_processed(tmp_path):
 
     assert source.total_frames == 5
     assert source.frames_processed == 5
+
+
+def test_stream_raises_clear_error_when_video_decodes_no_frames(tmp_path):
+    video_path = tmp_path / "empty.avi"
+    write_empty_video(video_path)
+
+    source = VideoFileBoardStateSource(video_path, _make_calibration())
+
+    with pytest.raises(RuntimeError):
+        list(source.stream())

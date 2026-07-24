@@ -172,3 +172,9 @@ Task: "Create src/chess_transmission/engine/review.py (ReviewItem, ReviewLog)"
 - Commit after each task or logical group
 - Stop at any checkpoint to validate a story independently
 - Avoid: vague tasks, same-file conflicts, cross-story dependencies that break independence
+
+---
+
+## Phase 6: Convergence
+
+- [X] T019 In `src/chess_transmission/board_source/video_file_source.py`, make `VideoFileBoardStateSource.stream()` raise a clear `RuntimeError` if the video decodes zero frames (mirroring the check already present in `capture_once()`), and add a test covering a video that opens successfully but yields no frames, per FR-007/SC-004 (partial) — added `write_empty_video()` to `tests/unit/video_fixtures.py` (confirmed empirically: OpenCV reports `isOpened()==True` for a zero-frame container but `read()` fails immediately), plus one test in `test_video_file_source.py` and one in `test_cli_extract.py` covering the CLI-level error message; verified live via the real `chess-transmission extract` command
